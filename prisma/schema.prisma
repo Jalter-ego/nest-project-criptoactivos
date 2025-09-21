@@ -15,9 +15,51 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  id         String       @id @default(cuid())
+  email      String       @unique
+  name       String?
+  password   String?
+  portafolio Portafolio[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Portafolio {
+  id           String        @id @default(cuid())
+  name         String
+  saldo        Float         @default(0)
+  transactions Transaction[]
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id          String  @id @default(cuid())
+  type        String
+  amount      Float
+  price       Float
+  commission  Float
+  description String?
+
+  activeId     String
+  active       Active     @relation(fields: [activeId], references: [id])
+  portafolioId String
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Active {
+  id         String   @id @default(cuid())
+  name       String
+  symbol     String   @unique
+  price      Float
+  lastUpdate DateTime @default(now())
+
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
