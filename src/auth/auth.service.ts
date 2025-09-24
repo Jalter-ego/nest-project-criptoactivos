@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { SignInDto, SignInGoogle } from './signInDto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { OAuth2Client } from 'google-auth-library';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+
+import { RegisterDto, SignInDto, SignInGoogle } from './signInDto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -11,32 +13,66 @@ export class AuthService {
     private prismaService: PrismaService,
   ) {}
 
+  async signUp(registerDto: RegisterDto) {
+    console.log(registerDto);
+    
+    const userEmail = await this.prismaService.user.findFirst({
+      where: {
+        email: registerDto.email,
+      },
+    });
+    if (userEmail) {
+      throw new UnauthorizedException('Email ya registrado');
+    }
+    const userName = await this.prismaService.user.findFirst({
+      where: {
+        name: registerDto.name,
+      },
+    });
+    if (userName) {
+      throw new UnauthorizedException('Nombre de usuario ya registrado');
+    }
+
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    await this.prismaService.user.create({
+      data: {
+        ...registerDto,
+        password: hashedPassword,
+      },
+    });
+    return { message: 'Usuario registrado correctamente' };
+  }
+
   async signIn(signInDto: SignInDto) {
     const user = await this.prismaService.user.findFirst({
-        where:{
-            email: signInDto.email
-        }
+      where: {
+        email: signInDto.email,
+      },
     });
     if (!user) {
-      await this.prismaService.user.create({
-        data: signInDto
-      });
+      throw new UnauthorizedException('Usuario no encontrado');
     }
-    const userFind = await this.prismaService.user.findFirst({
-        where:{
-            email: signInDto.email
-        }
-    });
 
-    const payload = { user: userFind };
+    const isMatch = await bcrypt.compare(signInDto.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Contraseña incorrecta');
+    }
+
+    const payload = {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    };
     return { access_token: await this.jwtService.signAsync(payload) };
   }
 
   async googleLogin(dto: SignInGoogle) {
     console.log(dto);
-    
+
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-  
+
     const ticket = await client.verifyIdToken({
       idToken: dto.token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -47,27 +83,28 @@ export class AuthService {
       throw new Error('Invalid token');
     }
 
-    const emailUser = payload.email || ''
+    const emailUser = payload.email || '';
     const userFind = await this.prismaService.user.findFirst({
-        where:{
-            email: emailUser
-        }
+      where: {
+        email: emailUser,
+      },
     });
 
-    if(!userFind){
+    if (!userFind) {
       await this.prismaService.user.create({
         data: {
-          email: emailUser
-        }
-      })
-    }else console.log("si existe el usuario");
+          email: emailUser,
+          name: payload.name || '',
+        },
+      });
+    }
 
     const person = await this.prismaService.user.findFirst({
-        where:{
-            email: emailUser
-        }
+      where: {
+        email: emailUser,
+      },
     });
-    
+
     const res = {
       user: person,
       picture: payload.picture,
