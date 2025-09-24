@@ -7,10 +7,12 @@ import { AuthModule } from './auth/auth.module';
 import { ActiveModule } from './active/active.module';
 import { PortafolioModule } from './portafolio/portafolio.module';
 import { TransactionModule } from './transaction/transaction.module';
+//import { BinanceGateway } from './binance.gateway';
+import { BitstampGateway } from './bitstamp.gateway';
 
 @Module({
   imports: [UserModule,PrismaModule,AuthModule, ActiveModule, PortafolioModule, TransactionModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, /*BinanceGateway*/ BitstampGateway],
 })
 export class AppModule {}
