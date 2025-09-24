@@ -6,11 +6,17 @@ import {
   Post,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto, SignInGoogle } from './signInDto';
+import { RegisterDto, SignInDto, SignInGoogle } from './signInDto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('register')
+  signUp(@Body() registerDto: RegisterDto) {    
+    return this.authService.signUp(registerDto);
+  }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
