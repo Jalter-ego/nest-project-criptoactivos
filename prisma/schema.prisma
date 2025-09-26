@@ -56,7 +56,6 @@ model Active {
   id         String   @id @default(cuid())
   name       String
   symbol     String   @unique
-  price      Float
   lastUpdate DateTime @default(now())
 
   transactions Transaction[]

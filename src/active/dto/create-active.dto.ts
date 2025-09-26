@@ -1,4 +1,5 @@
 import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { Type } from "class-transformer"; 
 
 export class CreateActiveDto {
     @IsNotEmpty()
@@ -10,10 +11,7 @@ export class CreateActiveDto {
     symbol: string;
 
     @IsNotEmpty()
-    @IsNumber()
-    price: number;
-
-    @IsNotEmpty()
+    @Type(() => Date)
     @IsDate()
     lastUpdate: Date;
 }
