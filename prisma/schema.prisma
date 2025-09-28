@@ -75,7 +75,6 @@ model Transaction {
 model Active {
   symbol     String @id @unique
   name       String
-  price      Float
 
   transactions Transaction[]
   holdings     Holding[]

@@ -9,7 +9,4 @@ export class CreateActiveDto {
     @IsString()
     symbol: string;
 
-    @IsNotEmpty()
-    @IsNumber()
-    price: number;
 }
