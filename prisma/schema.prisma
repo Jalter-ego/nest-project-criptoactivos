@@ -14,6 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionType {
+  BUY
+  SELL
+}
+
 model User {
   id         String       @id @default(cuid())
   email      String       @unique
@@ -27,39 +32,51 @@ model User {
 model Portafolio {
   id           String        @id @default(cuid())
   name         String
-  saldo        Float         @default(0)
-  transactions Transaction[]
+  cash         Float         @default(10000.00)
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  transactions Transaction[]
+  holdings     Holding[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// NUEVO MODELO: Para registrar cuánto de cada activo posee el portafolio
+model Holding {
+  id           String @id @default(cuid())
+  quantity     Float  // Cantidad total del activo que se posee
+
+  portafolioId String
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  
+  activeSymbol String
+  active       Active @relation(fields: [activeSymbol], references: [symbol])
+
+  @@unique([portafolioId, activeSymbol]) // Un portafolio solo puede tener una tenencia por activo
+}
+
+
 model Transaction {
   id          String  @id @default(cuid())
-  type        String
+  type        TransactionType
   amount      Float
   price       Float
-  commission  Float
-  description String?
 
-  activeId     String
-  active       Active     @relation(fields: [activeId], references: [id])
+  activeSymbol String
+  active       Active          @relation(fields: [activeSymbol], references: [symbol])
+
   portafolioId String
   portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
 }
 
 model Active {
-  id         String   @id @default(cuid())
+  symbol     String @id @unique
   name       String
-  symbol     String   @unique
   price      Float
-  lastUpdate DateTime @default(now())
 
   transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  holdings     Holding[]
 }
