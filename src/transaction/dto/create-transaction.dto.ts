@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+export enum TransactionType {
+  BUY = 'BUY',
+  SELL = 'SELL',
+}
 
 export class CreateTransactionDto {
   @IsNotEmpty()
-  @IsString()
-  type: string;
+  @IsEnum(TransactionType)
+  type: TransactionType;
   @IsNotEmpty()
   @IsNumber()
   amount: number;
@@ -11,14 +16,8 @@ export class CreateTransactionDto {
   @IsNumber()
   price: number;
   @IsNotEmpty()
-  @IsNumber()
-  commission: number;
-  @IsOptional()
   @IsString()
-  description?: string;
-  @IsNotEmpty()
-  @IsString()
-  activeId: string;
+  activeSymbol: string;
   @IsNotEmpty()
   @IsString()
   portafolioId: string;

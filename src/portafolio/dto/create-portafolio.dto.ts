@@ -6,7 +6,7 @@ export class CreatePortafolioDto {
     name: string;
     @IsNotEmpty()
     @IsNumber()
-    saldo: number;
+    cash: number;
     @IsNotEmpty()
     @IsString()
     userId: string;

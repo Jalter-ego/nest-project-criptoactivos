@@ -17,18 +17,18 @@ export class ActiveController {
     return this.activeService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.activeService.findOne(id);
+  @Get(':symbol')
+  findOne(@Param('symbol') symbol: string) {
+    return this.activeService.findOne(symbol);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateActiveDto: UpdateActiveDto) {
-    return this.activeService.update(id, updateActiveDto);
+  @Patch(':symbol')
+  update(@Param('symbol') symbol: string, @Body() updateActiveDto: UpdateActiveDto) {
+    return this.activeService.update(symbol, updateActiveDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.activeService.remove(id);
+  @Delete(':symbol')
+  remove(@Param('symbol') symbol: string) {
+    return this.activeService.remove(symbol);
   }
 }

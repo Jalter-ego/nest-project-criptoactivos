@@ -19,19 +19,19 @@ export class ActiveService {
     return this.prismaService.active.findMany();
   }
 
-  findOne(id: string) {
+  findOne(symbol: string) {
     return this.prismaService.active.findUnique({
-      where: { id },
+      where: { symbol },
     });
   }
 
-  update(id: string, updateActiveDto: UpdateActiveDto) {
-    return `This action updates a #${id} active`;
+  update(symbol: string, updateActiveDto: UpdateActiveDto) {
+    return `This action updates a #${symbol} active`;
   }
 
-  remove(id: string) {
+  remove(symbol: string) {
     return this.prismaService.active.delete({
-      where: { id },
+      where: { symbol },
     });
   }
 }
