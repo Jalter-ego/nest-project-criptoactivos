@@ -9,7 +9,15 @@ export class TransactionService {
     private readonly prisma: PrismaService,
   ) {}
 
-  create(createTransactionDto: CreateTransactionDto) {
+  async create(createTransactionDto: CreateTransactionDto) {
+    console.log(createTransactionDto);  
+    await this.prisma.holding.create({
+      data: {
+        quantity: createTransactionDto.amount,
+        activeSymbol: createTransactionDto.activeSymbol,
+        portafolioId: createTransactionDto.portafolioId
+      }
+    })
     return this.prisma.transaction.create({
       data: createTransactionDto,
     });

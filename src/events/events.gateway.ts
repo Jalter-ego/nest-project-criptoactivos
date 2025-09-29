@@ -11,7 +11,7 @@ import { CoinbaseService, TickerData } from './coinbase/coinbase.service';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // En producción, deberías restringir esto a tu dominio del frontend
+    origin: '*', 
   },
 })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
