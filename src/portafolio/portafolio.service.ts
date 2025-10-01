@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePortafolioDto } from './dto/create-portafolio.dto';
 import { UpdatePortafolioDto } from './dto/update-portafolio.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -33,13 +33,24 @@ export class PortafolioService {
   findAllByUser(userId: string) {
     return this.prismaService.portafolio.findMany({
       where: { userId },
+      include:{
+        holdings: true
+      }
     });
   }
 
-  findOne(id: string) {
-    return this.prismaService.portafolio.findUnique({
+  async findOne(id: string) {
+    const portafolio = await this.prismaService.portafolio.findUnique({
       where: { id },
+      include: {
+        holdings: true,
+      },
     });
+
+    if (!portafolio) {
+      throw new NotFoundException(`Portafolio con ID "${id}" no encontrado.`);
+    }
+    return portafolio;
   }
 
   update(id: string, updatePortafolioDto: UpdatePortafolioDto) {
