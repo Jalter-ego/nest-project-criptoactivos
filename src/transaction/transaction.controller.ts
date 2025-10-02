@@ -25,9 +25,17 @@ export class TransactionController {
     return this.transactionService.findAll();
   }
 
-  @Get('user/:userId')
-  findAllByUser(@Param('userId') userId: string) {
-    return this.transactionService.findAllByUser(userId);
+  @Get('portafolio/:portafolioId')
+  findAllByPortafolio(@Param('portafolioId') portafolioId: string) {
+    return this.transactionService.findAllByPortafolio(portafolioId);
+  }
+
+  @Get('portafolio/:portafolioId/active/:symbol')
+  findAllByportafolioAndActive(
+    @Param('portafolioId') portafolioId: string,
+    @Param('symbol') symbol: string,
+  ) {
+    return this.transactionService.findAllByPortafolioAndActive(portafolioId, symbol);
   }
 
   @Get(':id')

@@ -136,14 +136,25 @@ export class TransactionService {
     return this.prisma.transaction.findMany();
   }
 
-  findAllByUser(userId: string) {
+  findAllByPortafolio(portafolioId: string) {
     return this.prisma.transaction.findMany({
       where: {
         portafolio: {
-          userId: userId,
+          id: portafolioId,
         },
       },
     });
+  }
+
+  findAllByPortafolioAndActive(portafolioId:string,symbol:string){
+    return this.prisma.transaction.findMany({
+      where:{
+        activeSymbol: symbol,
+        portafolio:{
+          id: portafolioId
+        }
+      }
+    })
   }
 
   findOne(id: string) {
