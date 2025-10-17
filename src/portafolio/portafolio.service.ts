@@ -39,6 +39,23 @@ export class PortafolioService {
     });
   }
 
+  async findSnapshots(portafolioId: string) {
+    const portafolioExists = await this.prismaService.portafolio.findUnique({
+      where: { id: portafolioId },
+    });
+
+    if (!portafolioExists) {
+      throw new NotFoundException(`Portafolio con ID "${portafolioId}" no encontrado.`);
+    }
+
+    return this.prismaService.portafolioSnapshot.findMany({
+      where: { portafolioId },
+      orderBy: {
+        timestamp: 'asc',
+      },
+    });
+  }
+
   async findOne(id: string) {
     const portafolio = await this.prismaService.portafolio.findUnique({
       where: { id },
