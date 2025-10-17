@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import * as WebSocket from 'ws';
 
@@ -6,29 +6,46 @@ export interface TickerData {
   product_id: string;
   price: string;
   volume_24_h: string;
-  low_24_h: string
-  high_24_h: string
-  low_52_w: string
-  high_52_w: string
-  price_percent_chg_24_h: string
-  best_bid: string,
-  best_ask: string,
-  best_bid_quantity: string,
-  best_ask_quantity: string
+  low_24_h: string;
+  high_24_h: string;
+  low_52_w: string;
+  high_52_w: string;
+  price_percent_chg_24_h: string;
+  best_bid: string;
+  best_ask: string;
+  best_bid_quantity: string;
+  best_ask_quantity: string;
 }
 
 @Injectable()
 export class CoinbaseService implements OnModuleInit {
   private ws: WebSocket;
   private readonly wsUrl = 'wss://advanced-trade-ws.coinbase.com';
+  private readonly logger = new Logger(CoinbaseService.name);
 
-  // Usaremos un Subject de RxJS para emitir eventos de forma interna
   private tickerSubject = new Subject<TickerData>();
-
   public ticker$ = this.tickerSubject.asObservable();
+
+  private latestTickerData: Map<string, TickerData> = new Map();
 
   onModuleInit() {
     this.connect();
+  }
+
+  /**
+   * Obtiene el precio más reciente de un activo desde el caché.
+   * @param productId Ej: 'BTC-USD'
+   * @returns El precio como número, o 0 si no se encuentra.
+   */
+  public getCurrentPrice(productId: string): number {
+    const ticker = this.latestTickerData.get(productId);
+    if (ticker && ticker.price) {
+      return parseFloat(ticker.price);
+    }
+    this.logger.warn(
+      `No se encontró precio en caché para ${productId}. Devolviendo 0.`,
+    );
+    return 0;
   }
 
   private connect() {
@@ -43,7 +60,6 @@ export class CoinbaseService implements OnModuleInit {
     this.ws.on('message', (data: WebSocket.Data) => {
       const message = JSON.parse(data.toString());
 
-      // La API de ticker envía eventos en un array 'events'
       if (message.events && message.events[0]?.tickers) {
         const tickers: any[] = message.events[0].tickers;
 
@@ -60,8 +76,10 @@ export class CoinbaseService implements OnModuleInit {
             low_24_h: ticker.low_24_h,
             price_percent_chg_24_h: ticker.price_percent_chg_24_h,
             best_bid_quantity: ticker.best_bid_quantity,
-            best_ask_quantity: ticker.best_ask_quantity
+            best_ask_quantity: ticker.best_ask_quantity,
           };
+          // Actualizamos el caché con el dato más reciente
+          this.latestTickerData.set(tickerData.product_id, tickerData);          
           // Emitimos el dato para que el Gateway lo escuche
           this.tickerSubject.next(tickerData);
         });

@@ -1,11 +1,23 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateTransactionDto, TransactionType } from './dto/create-transaction.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  CreateTransactionDto,
+  TransactionType,
+} from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CoinbaseService } from 'src/events/coinbase/coinbase.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly coinbaseService: CoinbaseService,
+  ) {}
 
   async create(createTransactionDto: CreateTransactionDto) {
     const { portafolioId, activeSymbol, amount, price, type } =
@@ -16,7 +28,9 @@ export class TransactionService {
     });
 
     if (!portafolio) {
-      throw new NotFoundException(`Portafolio con ID "${portafolioId}" no encontrado.`);
+      throw new NotFoundException(
+        `Portafolio con ID "${portafolioId}" no encontrado.`,
+      );
     }
 
     // Usamos una transacción de Prisma para garantizar la atomicidad.
@@ -125,10 +139,43 @@ export class TransactionService {
       });
 
       // 7. Devolvemos el portafolio actualizado con sus holdings
-      return tx.portafolio.findUnique({
-          where: { id: portafolioId },
-          include: { holdings: true },
+      const updatedPortafolioWithHoldings = await tx.portafolio.findUnique({
+        where: { id: portafolioId },
+        include: { holdings: true },
       });
+
+      // Llamamos a una función helper para mantener el código limpio
+      await this._createSnapshot(tx, updatedPortafolioWithHoldings);
+
+      return updatedPortafolioWithHoldings;
+    });
+  }
+
+  private async _createSnapshot(
+    tx: Omit<
+      Prisma.TransactionClient,
+      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+    >,
+    portafolio: any, // Tipo debería ser Portafolio & { holdings: Holding[] }
+  ) {
+    let holdingsValue = 0;
+
+    // Calculamos el valor de todos los activos que posee el usuario
+    for (const holding of portafolio.holdings) {
+      const currentPrice = this.coinbaseService.getCurrentPrice(
+        holding.activeSymbol,
+      );
+      holdingsValue += holding.quantity * currentPrice;
+    }
+
+    const totalValue = portafolio.cash + holdingsValue;
+
+    // Guardamos la "foto" en la base de datos
+    await tx.portafolioSnapshot.create({
+      data: {
+        portafolioId: portafolio.id,
+        value: totalValue,
+      },
     });
   }
 
@@ -146,15 +193,15 @@ export class TransactionService {
     });
   }
 
-  findAllByPortafolioAndActive(portafolioId:string,symbol:string){
+  findAllByPortafolioAndActive(portafolioId: string, symbol: string) {
     return this.prisma.transaction.findMany({
-      where:{
+      where: {
         activeSymbol: symbol,
-        portafolio:{
-          id: portafolioId
-        }
-      }
-    })
+        portafolio: {
+          id: portafolioId,
+        },
+      },
+    });
   }
 
   findOne(id: string) {
