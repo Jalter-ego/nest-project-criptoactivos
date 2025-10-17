@@ -29,6 +29,17 @@ model User {
   updatedAt  DateTime     @updatedAt
 }
 
+model PortafolioSnapshot {
+  id           String   @id @default(cuid())
+  value        Float    // Valor total del portafolio en USD
+  timestamp    DateTime @default(now())
+
+  portafolioId String
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+
+  @@index([portafolioId, timestamp]) // Para búsquedas rápidas
+}
+
 model Portafolio {
   id           String        @id @default(cuid())
   name         String
@@ -39,6 +50,7 @@ model Portafolio {
   
   transactions Transaction[]
   holdings     Holding[]
+  snapshots    PortafolioSnapshot[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
