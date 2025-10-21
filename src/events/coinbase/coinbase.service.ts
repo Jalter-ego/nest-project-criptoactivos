@@ -48,6 +48,10 @@ export class CoinbaseService implements OnModuleInit {
     return 0;
   }
 
+  public getLatestDataMap() {
+    return Object.fromEntries(this.latestTickerData);
+  }
+
   private connect() {
     console.log('Connecting to Coinbase WebSocket...');
     this.ws = new WebSocket(this.wsUrl);

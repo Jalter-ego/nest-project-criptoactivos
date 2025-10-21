@@ -3,9 +3,10 @@ import { TransactionService } from './transaction.service';
 import { TransactionController } from './transaction.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { EventsModule } from 'src/events/events.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [PrismaModule, EventsModule],
+  imports: [PrismaModule, EventsModule, HttpModule],
   controllers: [TransactionController],
   providers: [TransactionService],
 })
