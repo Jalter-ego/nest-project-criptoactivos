@@ -9,6 +9,7 @@ import { PortafolioModule } from './portafolio/portafolio.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { BitstampGateway } from './bitstamp.gateway';
 import { EventsModule } from './events/events.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EventsModule } from './events/events.module';
     PortafolioModule,
     TransactionModule,
     EventsModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService, BitstampGateway],
