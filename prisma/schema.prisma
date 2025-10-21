@@ -19,6 +19,12 @@ enum TransactionType {
   SELL
 }
 
+enum FeedbackType {
+  RISK_ALERT      // HU8: Alerta de riesgo (ej: alta concentración)
+  COST_ANALYSIS   // HU9: Análisis de costos (ej: comisiones altas)
+  BEHAVIORAL_NUDGE // HU7: Consejo conductual (ej: FOMO)
+}
+
 model User {
   id         String       @id @default(cuid())
   email      String       @unique
@@ -37,7 +43,19 @@ model PortafolioSnapshot {
   portafolioId String
   portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
 
-  @@index([portafolioId, timestamp]) // Para búsquedas rápidas
+  @@index([portafolioId, timestamp])
+}
+
+model Feedback {
+  id        String       @id @default(cuid())
+  message   String       @db.Text 
+  type      FeedbackType
+  createdAt DateTime     @default(now())
+
+  portafolioId String
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  
+  @@index([portafolioId])
 }
 
 model Portafolio {
@@ -51,6 +69,8 @@ model Portafolio {
   transactions Transaction[]
   holdings     Holding[]
   snapshots    PortafolioSnapshot[]
+  feedbacks    Feedback[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
