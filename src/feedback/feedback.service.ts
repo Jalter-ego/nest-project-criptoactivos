@@ -24,4 +24,12 @@ export class FeedbackService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async findRecent(portafolioId: string){
+    return this.prisma.feedback.findMany({
+      where:{ portafolioId },
+      orderBy: { createdAt: 'desc'},
+      take: 5
+    })
+  }
 }

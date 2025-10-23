@@ -18,4 +18,9 @@ export class FeedbackController {
   findByPortafolio(@Param('id') id: string) {
     return this.feedbackService.findByPortafolio(id);
   }
+
+  @Get('portafolio/:id/recent')
+  findRecent(@Param('id') id: string) {
+    return this.feedbackService.findRecent(id);
+  }
 }
