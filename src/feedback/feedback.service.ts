@@ -18,11 +18,14 @@ export class FeedbackService {
     });
   }
 
-  async findByPortafolio(portafolioId: string) {
+  async findByPortafolio(portafolioId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
     return this.prisma.feedback.findMany({
       where: { portafolioId },
+      skip,
+      take: limit,
       orderBy: { createdAt: 'desc' },
-    });
+    })
   }
 
   async findRecent(portafolioId: string){

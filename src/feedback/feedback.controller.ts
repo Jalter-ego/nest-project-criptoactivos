@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/feedback.dto';
 
@@ -15,8 +15,15 @@ export class FeedbackController {
   }
 
   @Get('portafolio/:id')
-  findByPortafolio(@Param('id') id: string) {
-    return this.feedbackService.findByPortafolio(id);
+  findByPortafolio(
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+
+    return this.feedbackService.findByPortafolio(id, pageNumber, limitNumber);
   }
 
   @Get('portafolio/:id/recent')
