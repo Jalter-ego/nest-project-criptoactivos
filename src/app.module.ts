@@ -10,6 +10,7 @@ import { TransactionModule } from './transaction/transaction.module';
 import { BitstampGateway } from './bitstamp.gateway';
 import { EventsModule } from './events/events.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { AiInsightsModule } from './ai-insights/ai-insights.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     TransactionModule,
     EventsModule,
     FeedbackModule,
+    AiInsightsModule,
   ],
   controllers: [AppController],
   providers: [AppService, BitstampGateway],
