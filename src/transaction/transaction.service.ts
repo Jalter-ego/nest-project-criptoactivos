@@ -13,6 +13,7 @@ import { CoinbaseService } from 'src/events/coinbase/coinbase.service';
 import { Prisma } from '@prisma/client';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
+import { fastApi } from 'src/api';
 
 @Injectable()
 export class TransactionService {
@@ -163,7 +164,7 @@ export class TransactionService {
   }
 
   private notifyAIService(portafolio: any, transaction: any) {
-    const aiServiceUrl = 'http://127.0.0.1:8000/analyze-trade';
+    const aiServiceUrl = fastApi + '/analyze-trade';
 
     try {
       // Asegúrate de tener este método en tu CoinbaseService
