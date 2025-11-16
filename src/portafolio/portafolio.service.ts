@@ -1,12 +1,15 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePortafolioDto } from './dto/create-portafolio.dto';
 import { UpdatePortafolioDto } from './dto/update-portafolio.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CoinbaseService } from 'src/events/coinbase/coinbase.service';
 
 @Injectable()
 export class PortafolioService {
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly coinbaseService: CoinbaseService
   ) {}
 
   async create(createPortafolioDto: CreatePortafolioDto) {
@@ -70,8 +73,47 @@ export class PortafolioService {
     return portafolio;
   }
 
+  async getTotalValue(id: string): Promise<{
+    totalValue: number;
+  }> {
+    const portafolio = await this.prismaService.portafolio.findUnique({
+      where: { id },
+      include: {
+        holdings: true,
+      },
+    });
+
+    if (!portafolio) {
+      throw new NotFoundException(`Portafolio con ID "${id}" no encontrado.`);
+    }
+
+    let holdingsValue = 0;
+
+    for (const holding of portafolio.holdings) {
+      const currentPrice = this.coinbaseService.getCurrentPrice(
+        holding.activeSymbol,
+      );
+      holdingsValue += holding.quantity * currentPrice;
+    }
+
+    const totalValue = portafolio.cash + holdingsValue;
+
+    return {
+      totalValue: totalValue,
+    };
+  }
+
   update(id: string, updatePortafolioDto: UpdatePortafolioDto) {
-    return `This action updates a #${id} portafolio`;
+    const portafolioFind = this.prismaService.portafolio.findUnique({
+      where: { id },
+    });
+    if (!portafolioFind) {
+      throw new NotFoundException(`Portafolio con ID "${id}" no encontrado.`);
+    }
+    return this.prismaService.portafolio.update({
+      where: { id },
+      data: updatePortafolioDto,
+    });
   }
 
   remove(id: string) {

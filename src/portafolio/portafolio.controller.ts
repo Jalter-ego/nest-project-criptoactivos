@@ -27,6 +27,11 @@ export class PortafolioController {
     return this.portafolioService.findOne(id);
   }
 
+  @Get(':id/value')
+  getTotalValue(@Param('id') id: string) {
+    return this.portafolioService.getTotalValue(id);
+  }
+
   @Get(':id/snapshots')
   findSnapshots(@Param('id') id: string) {
     return this.portafolioService.findSnapshots(id);
