@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -41,37 +42,33 @@ export class TransactionService {
         if (type === TransactionType.BUY) {
           const totalCost = amount * price;
 
-          // 2. Verificamos si el portafolio tiene suficiente dinero.
           if (portafolio.cash < totalCost) {
             throw new BadRequestException(
               'Fondos insuficientes para realizar la compra.',
             );
           }
 
-          // 3. Restamos el dinero del portafolio.
           await tx.portafolio.update({
             where: { id: portafolioId },
             data: {
               cash: {
                 decrement: totalCost,
               },
+              invested: {
+                increment: totalCost
+              }
             },
           });
-
-          // 4. Actualizamos el Holding. Usamos 'upsert' que es perfecto para esto:
-          // - Si el holding existe, actualiza (incrementa) la cantidad.
-          // - Si no existe, lo crea.
           await tx.holding.upsert({
             where: {
               portafolioId_activeSymbol: {
-                // Así se usa el índice @@unique
                 portafolioId,
                 activeSymbol,
               },
             },
             update: {
               quantity: {
-                increment: amount, // Suma la nueva cantidad a la existente.
+                increment: amount,
               },
             },
             create: {
@@ -83,7 +80,6 @@ export class TransactionService {
         }
         // Flujo de Lógica para VENTA (SELL)
         else if (type === TransactionType.SELL) {
-          // 2. Buscamos el holding para verificar si el usuario posee ese activo.
           const holding = await tx.holding.findUnique({
             where: {
               portafolioId_activeSymbol: {
@@ -93,7 +89,6 @@ export class TransactionService {
             },
           });
 
-          // 3. Verificamos si tiene suficientes activos para vender.
           if (!holding || holding.quantity < amount) {
             throw new BadRequestException(
               'No posees suficientes activos para realizar la venta.',
@@ -102,17 +97,15 @@ export class TransactionService {
 
           const totalGain = amount * price;
 
-          // 4. Aumentamos el dinero en el portafolio.
           await tx.portafolio.update({
             where: { id: portafolioId },
             data: {
               cash: {
-                increment: totalGain, // Suma el dinero de la venta.
+                increment: totalGain, 
               },
             },
           });
 
-          // 5. Restamos la cantidad del activo del holding.
           await tx.holding.update({
             where: {
               portafolioId_activeSymbol: {
@@ -122,7 +115,7 @@ export class TransactionService {
             },
             data: {
               quantity: {
-                decrement: amount, // Resta la cantidad vendida.
+                decrement: amount, 
               },
             },
           });
@@ -138,28 +131,21 @@ export class TransactionService {
           },
         });
 
-        // 7. Devolvemos el portafolio actualizado con sus holdings
         const updatedPortafolioWithHoldings = await tx.portafolio.findUnique({
           where: { id: portafolioId },
           include: { holdings: true },
         });
 
-        // Llamamos a una función helper para mantener el código limpio
         await this._createSnapshot(tx, updatedPortafolioWithHoldings);
 
-        // <--- 4. DEVUELVE AMBOS OBJETOS
         return {
           updatedPortafolio: updatedPortafolioWithHoldings,
           newTransaction: createdTransaction,
         };
       });
-    // <--- 5. LLAMA A LA IA *DESPUÉS* DE QUE LA DB SE CONFIRMÓ
-    // Esto es "fire and forget" (dispara y olvida), no bloquea al usuario.
-    console.log(result);
     
     this.notifyAIService(result.updatedPortafolio, result.newTransaction);
 
-    // <--- 6. DEVUELVE LA RESPUESTA ORIGINAL AL FRONTEND
     return result.updatedPortafolio;
   }
 
@@ -167,19 +153,16 @@ export class TransactionService {
     const aiServiceUrl = fastApi + '/analyze-trade';
 
     try {
-      // Asegúrate de tener este método en tu CoinbaseService
       const marketData = this.coinbaseService.getLatestDataMap(); 
 
       const payload = {
         portafolio,
         transaction,
-        marketData,
+        market_data: marketData,
       };
 
       const request = this.httpService.post(aiServiceUrl, payload);
 
-      // Usamos lastValueFrom pero con .catch() para que no bloquee
-      // la ejecución principal si falla.
       lastValueFrom(request).catch((err) => {
         console.error(
           'Error al notificar al servicio de IA:',
@@ -196,7 +179,7 @@ export class TransactionService {
       Prisma.TransactionClient,
       '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
     >,
-    portafolio: any, // Tipo debería ser Portafolio & { holdings: Holding[] }
+    portafolio: any,
   ) {
     let holdingsValue = 0;
 
@@ -210,7 +193,6 @@ export class TransactionService {
 
     const totalValue = portafolio.cash + holdingsValue;
 
-    // Guardamos la "foto" en la base de datos
     await tx.portafolioSnapshot.create({
       data: {
         portafolioId: portafolio.id,

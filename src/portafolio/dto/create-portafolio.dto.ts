@@ -1,13 +1,16 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePortafolioDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
-    @IsNotEmpty()
-    @IsNumber()
-    cash: number;
-    @IsNotEmpty()
-    @IsString()
-    userId: string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+  @IsNotEmpty()
+  @IsNumber()
+  cash: number;
+  @IsOptional()
+  @IsNumber()
+  invested?: number;
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
 }
