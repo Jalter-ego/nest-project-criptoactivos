@@ -9,4 +9,12 @@ export class AiInsightsController {
   async getInsights(@Param('id') portafolioId: string) {
     return this.aiInsightsService.getPortfolioInsights(portafolioId);
   }
+
+  @Get('sugerencia/portafolio/:portafolioId/active/:symbol')
+  async getSugerencia(
+    @Param('portafolioId') portafolioId: string,
+    @Param('symbol') symbol: string,
+  ) {
+    return this.aiInsightsService.getSugerencia(portafolioId, symbol);
+  }
 }
