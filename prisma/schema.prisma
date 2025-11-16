@@ -41,7 +41,7 @@ model PortafolioSnapshot {
   timestamp    DateTime @default(now())
 
   portafolioId String
-  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id], onDelete: Cascade)
 
   @@index([portafolioId, timestamp])
 }
@@ -53,7 +53,7 @@ model Feedback {
   createdAt DateTime     @default(now())
 
   portafolioId String
-  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id], onDelete: Cascade)
   
   @@index([portafolioId])
 }
@@ -62,6 +62,7 @@ model Portafolio {
   id           String        @id @default(cuid())
   name         String
   cash         Float         @default(10000.00)
+  invested     Float         @default(0.00) 
 
   userId       String
   user         User     @relation(fields: [userId], references: [id])
@@ -81,7 +82,7 @@ model Holding {
   quantity     Float  // Cantidad total del activo que se posee
 
   portafolioId String
-  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id], onDelete: Cascade)
   
   activeSymbol String
   active       Active @relation(fields: [activeSymbol], references: [symbol])
@@ -100,7 +101,7 @@ model Transaction {
   active       Active          @relation(fields: [activeSymbol], references: [symbol])
 
   portafolioId String
-  portafolio   Portafolio @relation(fields: [portafolioId], references: [id])
+  portafolio   Portafolio @relation(fields: [portafolioId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
 }
 
