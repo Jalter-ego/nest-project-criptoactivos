@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { PortafolioService } from './portafolio.service';
 import { CreatePortafolioDto } from './dto/create-portafolio.dto';
 import { UpdatePortafolioDto } from './dto/update-portafolio.dto';
@@ -22,14 +30,29 @@ export class PortafolioController {
     return this.portafolioService.findAllByUser(userId);
   }
 
+  @Get('user/:userId/detailed')
+  findAllByUserWithPrices(@Param('userId') userId: string) {
+    return this.portafolioService.findAllByUserWithPrices(userId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.portafolioService.findOne(id);
   }
 
+  @Get(':id/detailed')
+  findOneWithPrices(@Param('id') id: string) {
+    return this.portafolioService.findOneWithPrices(id);
+  }
+
   @Get(':id/value')
   getTotalValue(@Param('id') id: string) {
     return this.portafolioService.getTotalValue(id);
+  }
+
+  @Get(':id/metrics')
+  getRiskMetrics(@Param('id') id: string) {
+    return this.portafolioService.calculateRiskMetrics(id);
   }
 
   @Get(':id/snapshots')
@@ -38,7 +61,10 @@ export class PortafolioController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePortafolioDto: UpdatePortafolioDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePortafolioDto: UpdatePortafolioDto,
+  ) {
     return this.portafolioService.update(id, updatePortafolioDto);
   }
 
