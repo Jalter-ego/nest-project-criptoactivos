@@ -1,11 +1,9 @@
 /* eslint-disable prettier/prettier */
-// src/services/ai-insights.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CoinbaseService } from 'src/events/coinbase/coinbase.service';
 import { fastApi } from 'src/api';
 import { HttpService } from '@nestjs/axios';
-import { Holding } from './entities/Holding';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
@@ -30,7 +28,7 @@ export class AiInsightsService {
       { name: 'Cash', value: portfolio.cash },
     ];
     for (const holding of portfolio.holdings) {
-      const price = await this.coinbaseService.getCurrentPrice(
+      const price = this.coinbaseService.getCurrentPrice(
         holding.activeSymbol,
       );
       const value = holding.quantity * price;
