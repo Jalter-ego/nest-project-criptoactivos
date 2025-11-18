@@ -11,6 +11,7 @@ import { BitstampGateway } from './bitstamp.gateway';
 import { EventsModule } from './events/events.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { AiInsightsModule } from './ai-insights/ai-insights.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AiInsightsModule } from './ai-insights/ai-insights.module';
     EventsModule,
     FeedbackModule,
     AiInsightsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, BitstampGateway],
